@@ -1,0 +1,2 @@
+For example, If you want to read the first five lines from a text file, run a loop five times, and use the readline() method in the loop’s body. 
+Using this approach, we can read a specific number of lines. 12 4
