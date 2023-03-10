@@ -114,5 +114,5 @@ cython_debug/
 
 # Editor
 .vscode/
-
+.idea/
 playground.py
