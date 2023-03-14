@@ -15,8 +15,8 @@ from dynamic_sse.client.structures import (
     WordPostList,
 )
 from dynamic_sse.client.ske import SecretKeyEnc
-from dynamic_sse.client.utils import PseudoRandomFunc, RandOracles
-from dynamic_sse.tools import BytesOpp, FileTools
+from dynamic_sse.client.utils import PseudoRandomFunc
+from dynamic_sse.tools import BytesOpp, FileTools, RandOracles
 from log import get_logger
 
 # TODO give z as an argument to contractor

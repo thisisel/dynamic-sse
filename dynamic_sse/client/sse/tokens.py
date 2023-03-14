@@ -3,7 +3,7 @@ from typing import Tuple
 from dynamic_sse.client.utils import PseudoRandomFunc
 from log import get_logger
 from dynamic_sse.tools import FileTools, BytesOpp
-from dynamic_sse.client.utils import RandOracles
+from dynamic_sse.tools import RandOracles
 from dynamic_sse.client.ske import SecretKeyEnc
 
 logger = get_logger(__name__)
