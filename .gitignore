@@ -116,3 +116,4 @@ cython_debug/
 .vscode/
 .idea/
 playground.py
+my_app.log
