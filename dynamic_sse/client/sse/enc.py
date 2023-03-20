@@ -91,9 +91,10 @@ class Encode:
     def make_search_node(
         self, file_id: bytes, next_s_addr: bytes, p_w: bytes, ri_s: bytes
     ) -> bytes:
-        h1_val = RandOracles.hx(
+        h1_val = RandOracles.h_1(
             data=p_w + ri_s,
-            length=len(file_id) + self.addr_len,
+            addr_len=self.addr_len,
+            f_id_len=len(file_id),
         )
 
         a = file_id + next_s_addr
@@ -114,7 +115,10 @@ class Encode:
         prev_s_addr: bytes,
         next_s_addr: bytes,
     ) -> bytes:
-        h2_val = RandOracles.hx(data=p_file + ri_d, length=len(f_w) + 6 * self.addr_len)
+        h2_val = RandOracles.h_2(data=p_file + ri_d, 
+                                 addr_len=self.addr_len,
+                                 k=self.k,
+                                 )
 
         a = (
             next_lf_addr

@@ -14,3 +14,11 @@ class RandOracles:
         while length > len(concatenated_digest):
             concatenated_digest += first_digest
         return concatenated_digest[:length]
+    
+    @classmethod
+    def h_1(cls, data: bytes, addr_len: int, f_id_len:int):
+        return cls.hx(data=data, length=addr_len+f_id_len)
+    
+    @classmethod
+    def h_2(cls, data: bytes, addr_len: int, k:int):
+        return cls.hx(data=data, length=6*addr_len+k)
