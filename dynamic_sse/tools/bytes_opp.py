@@ -33,10 +33,3 @@ class BytesOpp:
             if size < 1024.0:
                 return {'size' : size, 'unit' : u}
             size /= 1024.0
-
-
-
-if __name__ == "__main__":
-    f_size = os.path.getsize(r"/home/elahe/Projects/Python/dynamic_sse/plain.txt")
-    x = BytesOpp.convert_bytes(f_size)
-    print("file size is", x)
