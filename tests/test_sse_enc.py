@@ -7,8 +7,7 @@ import pytest
 from numpy import nditer
 
 from dynamic_sse.client.sse import Encode, Generate, FREE_LIST_INIT_SIZE, FREE
-from dynamic_sse.tools import FileTools, DataTools
-
+from dynamic_sse.tools import FileTools, DataTools, BytesOpp, RandOracles
 
 @pytest.fixture
 def test_data():
@@ -52,10 +51,33 @@ def test_zero(test_enc_obj : Encode):
     
     assert type(z_bytes) == bytes
     assert len(z_bytes) == test_enc_obj.addr_len
-    
 
-def test_make_search_node():
-    pass
+def test_find_id(test_enc_obj: Encode):
+    f_ids = [test_enc_obj.find_usable_file_id() for _ in range(10)]
+
+    for f_id in f_ids:
+        assert f_id in test_enc_obj.file_dict.keys()
+        assert test_enc_obj.file_dict.get(f_id) is None
+
+def test_make_search_node(test_enc_obj: Encode):
+    addr_len = test_enc_obj.addr_len
+    file_id = urandom(test_enc_obj.k)
+    next_s_addr = urandom(addr_len)
+    p_w = urandom(test_enc_obj.k)
+    ri_s = urandom(test_enc_obj.k)
+
+    s_node = test_enc_obj.make_search_node(file_id=file_id, next_s_addr=next_s_addr, p_w=p_w, ri_s=ri_s)
+    assert len(s_node) ==  len(file_id)+addr_len+test_enc_obj.k
+   
+    splitter = len(file_id)+addr_len
+    
+    r = s_node[splitter:]
+    assert r == ri_s
+
+    hashed_entry = s_node[:splitter]
+    h1_val = RandOracles.h_1(data = p_w+ri_s, addr_len=addr_len, f_id_len=len(file_id))
+    entry = BytesOpp.xor_bytes(hashed_entry, h1_val)
+    assert entry == file_id+next_s_addr
 
 
 def test_make_dual_node():
