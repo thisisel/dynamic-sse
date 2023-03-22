@@ -1,13 +1,12 @@
 from os import urandom
 from typing import Dict, List
 
-# from random import randbytes
-
 import pytest
 from numpy import nditer
 
 from dynamic_sse.client.sse import Encode, Generate, FREE_LIST_INIT_SIZE, FREE
 from dynamic_sse.tools import FileTools, DataTools, BytesOpp, RandOracles
+
 
 @pytest.fixture
 def test_data():
@@ -46,11 +45,13 @@ def test_enc_obj(test_directory_size):
 
     return test_enc
 
-def test_zero(test_enc_obj : Encode):
+
+def test_zero(test_enc_obj: Encode):
     z_bytes = test_enc_obj.ZERO.encode()
-    
+
     assert type(z_bytes) == bytes
     assert len(z_bytes) == test_enc_obj.addr_len
+
 
 def test_find_id(test_enc_obj: Encode):
     f_ids = [test_enc_obj.find_usable_file_id() for _ in range(10)]
@@ -58,6 +59,7 @@ def test_find_id(test_enc_obj: Encode):
     for f_id in f_ids:
         assert f_id in test_enc_obj.file_dict.keys()
         assert test_enc_obj.file_dict.get(f_id) is None
+
 
 def test_make_search_node(test_enc_obj: Encode):
     addr_len = test_enc_obj.addr_len
@@ -146,7 +148,7 @@ def test_update_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
         assert w_postlist.tail.next_d_addr_bytes(length=30) is None
 
 
-def test_make_free_list(test_enc_obj : Encode):
+def test_make_free_list(test_enc_obj: Encode):
     test_enc_obj.make_free_lists()
 
     # assert search table entry
@@ -178,6 +180,7 @@ def test_make_free_list(test_enc_obj : Encode):
     
     assert free_entry_count == FREE_LIST_INIT_SIZE
 
+
 # TODO test make arrays
 def test_encode_make_arrays(test_enc_obj_w_lists: Encode, total_nodes_num: int):
     test_enc_obj_w_lists.make_arrays()
@@ -185,6 +188,7 @@ def test_encode_make_arrays(test_enc_obj_w_lists: Encode, total_nodes_num: int):
     # l = [n if n is not None for n in nditer(test_enc_obj_w_lists.search_array):]
     # assert test_enc_obj_w_lists.search_array
     pass
+
 
 def test_enc():
     pass
