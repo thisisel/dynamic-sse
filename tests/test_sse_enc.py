@@ -81,44 +81,54 @@ def test_make_search_node(test_enc_obj: Encode):
     entry = BytesOpp.xor_bytes(hashed_entry, h1_val)
     assert entry == file_id + next_s_addr
 
+@pytest.fixture
+def test_d_node_data(test_enc_obj: Encode):
+    d_node_data = {
+    'p_file' : urandom(test_enc_obj.k),
+    'ri_d' : urandom(test_enc_obj.k),
+    'f_w' : urandom(test_enc_obj.k),
+    'next_lf_addr' : urandom(test_enc_obj.addr_len),
+    'prev_d_addr' : urandom(test_enc_obj.addr_len),
+    'next_d_addr' : urandom(test_enc_obj.addr_len),
+    's_addr' : urandom(test_enc_obj.addr_len),
+    'prev_s_addr' : urandom(test_enc_obj.addr_len),
+    'next_s_addr' : urandom(test_enc_obj.addr_len),
+    }
 
-def test_make_dual_node(test_enc_obj: Encode):
-    p_file = urandom(test_enc_obj.k)
-    ri_d = urandom(test_enc_obj.k)
-    f_w = urandom(test_enc_obj.k)
-    next_lf_addr = urandom(test_enc_obj.addr_len)
-    prev_d_addr = urandom(test_enc_obj.addr_len)
-    next_d_addr = urandom(test_enc_obj.addr_len)
-    s_addr = urandom(test_enc_obj.addr_len)
-    prev_s_addr = urandom(test_enc_obj.addr_len)
-    next_s_addr = urandom(test_enc_obj.addr_len)
+    return d_node_data
 
+@pytest.fixture
+def test_dual_node(test_enc_obj: Encode, test_d_node_data: Dict[str, bytes]):
+    
     d_node = test_enc_obj.make_dual_node(
-        p_file=p_file,
-        ri_d=ri_d,
-        f_w=f_w,
-        next_lf_addr=next_lf_addr,
-        s_addr=s_addr,
-        prev_d_addr=prev_d_addr,
-        next_d_addr=next_d_addr,
-        prev_s_addr=prev_s_addr,
-        next_s_addr=next_s_addr,
+        p_file=test_d_node_data['p_file'],
+        ri_d=test_d_node_data['ri_d'],
+        f_w=test_d_node_data['f_w'],
+        next_lf_addr=test_d_node_data['next_lf_addr'],
+        s_addr=test_d_node_data['s_addr'],
+        prev_d_addr=test_d_node_data['prev_d_addr'],
+        next_d_addr=test_d_node_data['next_d_addr'],
+        prev_s_addr=test_d_node_data['prev_s_addr'],
+        next_s_addr=test_d_node_data['next_s_addr'],
     )
     assert len(d_node) == (6 * test_enc_obj.addr_len) + (2*test_enc_obj.k)
 
     splitter = 6 * test_enc_obj.addr_len + test_enc_obj.k
 
     hashed_entry = d_node[:splitter]
-    h2_val = RandOracles.h_2(data=p_file+ri_d, addr_len=test_enc_obj.addr_len, k=test_enc_obj.k)
+    h2_val = RandOracles.h_2(data=test_d_node_data['p_file']+test_d_node_data['ri_d'], addr_len=test_enc_obj.addr_len, k=test_enc_obj.k)
     entry = BytesOpp.xor_bytes(hashed_entry, h2_val)
-    assert entry == next_lf_addr+prev_d_addr+next_d_addr+s_addr+prev_s_addr+next_s_addr+f_w
+    assert entry == test_d_node_data['next_lf_addr']+test_d_node_data['prev_d_addr']+test_d_node_data['next_d_addr']+test_d_node_data['s_addr']+test_d_node_data['prev_s_addr']+test_d_node_data['next_s_addr']+test_d_node_data['f_w']
 
     r = d_node[splitter:]
-    assert r == ri_d
+    assert r == test_d_node_data['ri_d']
 
-def test_make_dual_node():
-    pass
+    return d_node
 
+def test_d_node_indirect_addr_mod(test_dual_node : bytes, test_d_node_data : Dict[str, bytes], test_enc_obj : Encode):
+    hashed_entry, rd = DataTools.entry_splitter(entry=test_dual_node, split_ptr=6*test_enc_obj.addr_len + test_enc_obj.k)
+
+    
 
 def find_reserve_available_cell():
     pass
