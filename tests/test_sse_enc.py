@@ -41,7 +41,11 @@ def test_enc_obj(test_directory_size):
         assert len(keys[i]) == 32
     assert len(keys[3][0]) == 44
 
-    test_enc = Encode(size_c=test_directory_size, k=32, keys=keys)
+    return keys
+
+@pytest.fixture
+def test_enc_obj(test_directory_size, test_keys):
+    test_enc = Encode(size_c=test_directory_size, k=32, keys=test_keys)
 
     return test_enc
 
@@ -163,23 +167,27 @@ def test_make_free_list(test_enc_obj: Encode):
 
     # assert search table entry
     assert test_enc_obj.search_table.get(FREE) is not None
-    
+
     free_tail_encrypted = test_enc_obj.search_table[FREE]
     assert len(free_tail_encrypted) == test_enc_obj.addr_len * 2
-   
-    s_free_ptr, zero_b = DataTools.entry_splitter(entry=free_tail_encrypted, split_ptr=test_enc_obj.addr_len)
+
+    s_free_ptr, zero_b = DataTools.entry_splitter(
+        entry=free_tail_encrypted, split_ptr=test_enc_obj.addr_len
+    )
     assert zero_b == test_enc_obj.ZERO.encode()
 
-    #assert search array entries along with dual array counterparts
+    # assert search array entries along with dual array counterparts
     s_free_ptr_i = int.from_bytes(s_free_ptr, "big")
     assert test_enc_obj.search_array[s_free_ptr_i] is not None
 
-    free_entry_count = 0 
+    free_entry_count = 0
     while True:
         s_free_entry = test_enc_obj.search_array[s_free_ptr_i]
         assert len(s_free_entry) == test_enc_obj.addr_len * 2
-        
-        s_prev_free_ptr , d_free_ptr = DataTools.entry_splitter(s_free_entry, test_enc_obj.addr_len)
+
+        s_prev_free_ptr, d_free_ptr = DataTools.entry_splitter(
+            s_free_entry, test_enc_obj.addr_len
+        )
         assert test_enc_obj.dual_array[int.from_bytes(d_free_ptr, "big")] is not None
 
         free_entry_count += 1
@@ -187,8 +195,8 @@ def test_make_free_list(test_enc_obj: Encode):
         if s_prev_free_ptr == test_enc_obj.ZERO.encode():
             break
         s_free_ptr_i = int.from_bytes(s_prev_free_ptr, "big")
-    
-    assert free_entry_count == FREE_LIST_INIT_SIZE
+
+    assert free_entry_count == FREE_LIST_INIT_SIZE 
 
 
 # TODO test make arrays
@@ -198,6 +206,21 @@ def test_encode_make_arrays(test_enc_obj_w_lists: Encode, total_nodes_num: int):
     # l = [n if n is not None for n in nditer(test_enc_obj_w_lists.search_array):]
     # assert test_enc_obj_w_lists.search_array
     pass
+
+
+def test_make_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
+    addr_len = test_enc_obj.addr_len
+    for f_id, tokenized_words in test_data.items():
+        test_enc_obj.make_lf_lw(
+            f_id=f_id,
+            tokenized_words=tokenized_words,
+            f_file=urandom(addr_len),
+            p_file=urandom(addr_len),
+            g_file=urandom(addr_len),
+        )
+
+    assert len(test_enc_obj.dual_table.keys()) == len(test_data.keys())
+    assert len(test_enc_obj.d_available_cells) == len(test_enc_obj.s_available_cells)
 
 
 def test_enc():

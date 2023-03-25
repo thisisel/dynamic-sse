@@ -281,6 +281,74 @@ class Encode:
 
         self.lf_dict[f_id] = lf
 
+    def make_lf_lw(self, f_id: bytes, tokenized_words: List[str], f_file: bytes, p_file: bytes, g_file: bytes):
+        next_lf_addr = self.zero_bytes
+
+        for w in tokenized_words:
+            f_w, g_w, p_w = PseudoRandomFunc.get_word_hashes_ctx(word=w, k1=self.k1, 
+                                                                 k2=self.k2, k3=self.k3, 
+                                                                 length=2*self.addr_len)
+            
+            r_s = urandom(self.k)
+            r_d = urandom(self.k)
+
+            s_cell = self.find_reserve_available_cell(self.search_array)
+            s_addr = s_cell.to_bytes(self.addr_len)
+            d_cell = self.find_reserve_available_cell(self.dual_array)
+            d_addr = d_cell.to_bytes(self.addr_len)
+
+            prev_s_addr = self.zero_bytes
+            prev_d_addr = self.zero_bytes
+
+            if (lw_head_addrs_hashed := self.search_table.get(f_w)) is not None:
+                lw_head_addrs = BytesOpp.xor_bytes(lw_head_addrs_hashed, g_w)
+                next_s_addr, next_d_addr = DataTools.entry_splitter(entry=lw_head_addrs, split_ptr=self.addr_len)
+
+            else:
+                next_s_addr = self.zero_bytes
+                next_d_addr = self.zero_bytes
+                logger.debug(f" New word detected : {w}")
+
+            search_node = self.make_search_node(file_id=f_id, next_s_addr=next_s_addr, p_w=p_w, ri_s=r_s)
+            self.search_array[s_cell] = search_node
+
+            dual_node = self.make_dual_node(p_file=p_file, ri_d=r_d, f_w=f_w, 
+                                            next_lf_addr=next_lf_addr, 
+                                            s_addr=s_addr, 
+                                            prev_d_addr=prev_d_addr, 
+                                            next_d_addr=next_d_addr, 
+                                            prev_s_addr=prev_s_addr, 
+                                            next_s_addr=next_s_addr)
+            self.dual_array[d_cell] = dual_node
+
+            if next_d_addr != self.zero_bytes:
+                self.shift_d_node_forward(d_addr=next_d_addr, p_file=p_file, prev_s_addr=s_addr, prev_d_addr=d_addr)
+           
+            self.search_table[f_w] = BytesOpp.xor_bytes(s_addr+d_addr, g_w)
+
+            next_lf_addr = d_addr
+
+        self.dual_table[f_file] = BytesOpp.xor_bytes(d_addr, g_file)
+
+    def shift_d_node_forward(self, d_addr: bytes, p_file: bytes, prev_s_addr: bytes, prev_d_addr: bytes):
+        d_node = self.dual_array[int.from_bytes(d_addr)]
+        d_entry_hashed, rd = DataTools.entry_splitter(entry=d_node, split_ptr=6*self.addr_len+self.k)
+        
+        h2_val = RandOracles.h_2(data=p_file+rd, addr_len=self.addr_len, k=self.k)
+        d_entry = BytesOpp.xor_bytes(d_entry_hashed, h2_val)
+        
+        old_prev_d_addr = d_entry[self.addr_len : 2 * self.addr_len]
+        old_prev_s_addr = d_entry[4 * self.addr_len : 5 * self.addr_len]
+
+        cleaner_str = self.zero_bytes + old_prev_d_addr +2 * self.zero_bytes + old_prev_s_addr + self.zero_bytes + ("\0" * self.k).encode()
+        plug_str = self.zero_bytes + prev_d_addr +2 * self.zero_bytes + prev_s_addr + self.zero_bytes + ("\0" * self.k).encode()
+
+        cleaned_entry = BytesOpp.xor_bytes(d_entry, cleaner_str)
+        shifted_entry = BytesOpp.xor_bytes(cleaned_entry, plug_str)
+
+        shifted_entry_hashed = BytesOpp.xor_bytes(shifted_entry, h2_val)
+        self.dual_array[int.from_bytes(d_addr)] = shifted_entry_hashed + rd
+
     def enc(self, raw_files_dir: str, encoded_dir: str, ske: SecretKeyEnc):
         raw_files_dir_path = Path(raw_files_dir)
         file_num = 0
