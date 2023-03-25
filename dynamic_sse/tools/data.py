@@ -1,8 +1,10 @@
+from typing import Tuple
+
 
 class DataTools:
     
     @classmethod
-    def entry_splitter(cls, entry, split_ptr):
+    def entry_splitter(cls, entry: bytes, split_ptr: int)-> Tuple[bytes, bytes]:
             l_hs = entry[:split_ptr]
             r_hs = entry[split_ptr:]
         
