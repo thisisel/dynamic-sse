@@ -117,3 +117,4 @@ cython_debug/
 .idea/
 playground.py
 my_app.log
+tests/test_data/encrypted
