@@ -1,5 +1,5 @@
 import os
-from typing import List, Type, Tuple
+from typing import List, Tuple
 from cryptography.fernet import Fernet
 
 VALID_K = (20, 28, 32, 64)
