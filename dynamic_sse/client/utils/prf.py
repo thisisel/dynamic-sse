@@ -62,7 +62,13 @@ class PseudoRandomFunc:
     def get_word_hashes_ctx(
         cls, word: str | bytes, k1: int, k2: int, k3: int, length: int
     ) -> Tuple[bytes]:
-        """g_word length = 2* addr_len """
+        
+        """
+        returns 
+            \nf_word (K length), 
+            \ng_word (2* addr_len),
+            \np_word (K length),           
+        """
 
         f_word: bytes = None
         p_word: bytes = None
@@ -76,9 +82,14 @@ class PseudoRandomFunc:
         return f_word, g_word, p_word
 
     @classmethod
-    def get_file_hashes(cls, file, k1: int, k2: int, k3: int, length: int):
+    def get_file_hashes(cls, file, k1: int, k2: int, k3: int, length: int)->Tuple[bytes, bytes, bytes]:
+        """ 
+        returns 
+            \tf_file (K length), 
+            \tg_file (addr_len length), 
+            \tp_file (K length)
+        """
         from dynamic_sse.tools import FileTools
-        """ g_file length = addr_len"""
         
         f_file: bytes = None
         p_file: bytes = None
@@ -98,11 +109,11 @@ class PseudoRandomFunc:
             return
 
     def __enter__(self):
-        logger.debug(f"Initiated context for {self}")
+        # logger.info(f"Initiated context for {self}")
         return self
 
     def __exit__(self, ex_type, ex_value, ex_traceback):
         self.h_f.finalize()
         self.h_g.finalize()
         self.h_p.finalize()
-        logger.debug(f"Finalized context for {self}")
+        # logger.info(f"Finalized context for {self}")
