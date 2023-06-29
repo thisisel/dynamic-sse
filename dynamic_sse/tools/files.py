@@ -53,7 +53,7 @@ class FileTools:
     @classmethod
     def tokenize_txt_file(cls, file_path) -> List[str] | None:
         file_tokens = []
-        stop_words = ["a"]
+        stop_words = ["a", "s"]
 
         try:
             with open(file_path, "r") as corpus_file:
@@ -61,19 +61,11 @@ class FileTools:
                 while chunk := cls.chunk_reader(corpus_file):
                     clean_chunk = re.sub(r"[^A-Za-z0-9\s]+", "", chunk.lower())
                     chunk_tokens = [t for t in clean_chunk.split() if t not in stop_words]
+                    chunk_tokens = list(set(chunk_tokens))
                     file_tokens.extend(chunk_tokens)
-
+                    
             return file_tokens
         
         except FileNotFoundError:
             logger.debug(f'{file_path} was not found')
             return
-
-
-
-if __name__ == "__main__":
-    tokens = FileTools.tokenize_txt_file(
-        r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain/four.txt"
-    )
-    print(tokens)
-    # print(punctuation)
