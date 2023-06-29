@@ -9,6 +9,8 @@ logger = get_logger(__name__)
 
 
 class SecretKeyEnc:
+    HEADER_SIZE = 4
+
     def __init__(self, fernet_keys: List[bytes]) -> None:
 
         self.f_list = [Fernet(k) for k in fernet_keys]
@@ -51,7 +53,7 @@ class SecretKeyEnc:
                     enc_chunk = self.multi_f.encrypt(plain_chunk)
 
                     if is_header:
-                        enc_chunk_size = len(enc_chunk).to_bytes(4, "big")
+                        enc_chunk_size = len(enc_chunk).to_bytes(self.HEADER_SIZE, "big")
                         f_out.write(enc_chunk_size)
                         is_header = False
 
@@ -66,7 +68,7 @@ class SecretKeyEnc:
             try:
                 while True:
                     
-                    enc_chunk_size = f_in.read(4)
+                    enc_chunk_size = f_in.read(self.HEADER_SIZE)
                     if not enc_chunk_size:
                         break
 
