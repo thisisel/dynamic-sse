@@ -143,6 +143,7 @@ def test_probabilistic():
     keys_2 = [urandom(k) for _ in range(3)]
 
     f_1, g_1, p_1 = PseudoRandomFunc.get_word_hashes_ctx(word, *keys_1, l)
+    f_1_dup, g_1_dup, p_1_dup = PseudoRandomFunc.get_word_hashes_ctx(word, *keys_1, l)
     f_2, g_2, p_2 = PseudoRandomFunc.get_word_hashes_ctx(word, *keys_2, l)
 
 
@@ -154,4 +155,8 @@ def test_probabilistic():
     assert f_1 != f_2
     assert g_1 != g_2
     assert p_1 != p_2
+
+    assert f_1_dup == f_1
+    assert p_1_dup == p_1
+    assert g_1_dup == g_1
 

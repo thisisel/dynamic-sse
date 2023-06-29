@@ -19,5 +19,10 @@ def test_dir_stats_size():
     assert s < 110
 
 def test_text_tokenization():
-    tokens = FileTools.tokenize_txt_file(r'/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain/four.txt')
+    f_path = r'/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain/add/five.txt'
+    tokens = FileTools.tokenize_txt_file(file_path=f_path)
     assert len(tokens) > 10
+
+    with open(f_path, 'r') as in_file:
+        corpus = in_file.read()
+

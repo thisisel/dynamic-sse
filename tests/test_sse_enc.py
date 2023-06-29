@@ -6,6 +6,7 @@ from numpy import nditer
 
 from dynamic_sse.client.sse import Encode, Generate, FREE_LIST_INIT_SIZE, FREE
 from dynamic_sse.tools import FileTools, DataTools, BytesOpp, RandOracles
+from .conftest import test_keys, K, test_directory_size
 
 
 @pytest.fixture
@@ -26,22 +27,21 @@ def total_nodes_num(test_data):
     return num
 
 
-@pytest.fixture
-def test_directory_size():
-    n, s = FileTools.get_dir_files_stats(
-        r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain"
-    )
-    return s
+# @pytest.fixture
+# def test_directory_size():
+#     n, s = FileTools.get_dir_files_stats(
+#         r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain"
+#     )
+#     return s
 
+# @pytest.fixture
+# def test_keys():
+#     keys = Generate.get_keys(k=32)
+#     for i in range(3):
+#         assert len(keys[i]) == 32
+#     assert len(keys[3][0]) == 44
 
-@pytest.fixture
-def test_enc_obj(test_directory_size):
-    keys = Generate.get_keys(k=32)
-    for i in range(3):
-        assert len(keys[i]) == 32
-    assert len(keys[3][0]) == 44
-
-    return keys
+#     return keys
 
 @pytest.fixture
 def test_enc_obj(test_directory_size, test_keys):
@@ -72,16 +72,18 @@ def test_make_search_node(test_enc_obj: Encode):
     p_w = urandom(test_enc_obj.k)
     ri_s = urandom(test_enc_obj.k)
 
-    s_node = test_enc_obj.make_search_node(file_id=file_id, next_s_addr=next_s_addr, p_w=p_w, ri_s=ri_s)
-    assert len(s_node) ==  len(file_id)+addr_len+test_enc_obj.k
-   
-    splitter = len(file_id)+addr_len
-    
+    s_node = test_enc_obj.make_search_node(
+        file_id=file_id, next_s_addr=next_s_addr, p_w=p_w, ri_s=ri_s
+    )
+    assert len(s_node) == len(file_id) + addr_len + test_enc_obj.k
+
+    splitter = len(file_id) + addr_len
+
     r = s_node[splitter:]
     assert r == ri_s
 
     hashed_entry = s_node[:splitter]
-    h1_val = RandOracles.h_1(data = p_w+ri_s, addr_len=addr_len, f_id_len=len(file_id))
+    h1_val = RandOracles.h_1(data=p_w + ri_s, addr_len=addr_len, f_id_len=len(file_id))
     entry = BytesOpp.xor_bytes(hashed_entry, h1_val)
     assert entry == file_id + next_s_addr
 
@@ -130,9 +132,33 @@ def test_dual_node(test_enc_obj: Encode, test_d_node_data: Dict[str, bytes]):
     return d_node
 
 def test_d_node_indirect_addr_mod(test_dual_node : bytes, test_d_node_data : Dict[str, bytes], test_enc_obj : Encode):
-    hashed_entry, rd = DataTools.entry_splitter(entry=test_dual_node, split_ptr=6*test_enc_obj.addr_len + test_enc_obj.k)
+    new_next_lf_addr = urandom(test_enc_obj.addr_len)
+    old_next_lf_addr = test_dual_node[:test_enc_obj.addr_len]
+    wiper_str = old_next_lf_addr + 5 * test_enc_obj.zero_bytes + 2*(('\0'*test_enc_obj.k).encode())
+    plugger_str = new_next_lf_addr + 5 * test_enc_obj.zero_bytes + 2*(('\0'*test_enc_obj.k).encode())
+    cleaned_node = BytesOpp.xor_bytes(test_dual_node, wiper_str)
+    updated_node = BytesOpp.xor_bytes(cleaned_node, plugger_str)
 
+    assert cleaned_node[:test_enc_obj.addr_len] == test_enc_obj.zero_bytes
+    assert updated_node[:test_enc_obj.addr_len] == new_next_lf_addr
     
+    hashed_entry, rd = DataTools.entry_splitter(entry=updated_node, split_ptr=6*test_enc_obj.addr_len + test_enc_obj.k)
+    assert rd == test_d_node_data['ri_d']
+    
+    h2_val = RandOracles.h_2(data=test_d_node_data['p_file'] + test_d_node_data['ri_d'], addr_len=test_enc_obj.addr_len, k=test_enc_obj.k)
+    entry = BytesOpp.xor_bytes(hashed_entry, h2_val)
+
+    addrs = []
+    remains = entry
+    for _ in range(6):
+        a, remains = DataTools.entry_splitter(entry=remains, split_ptr=test_enc_obj.addr_len)
+        addrs.append(a)
+    
+    assert addrs[0] != test_d_node_data['next_lf_addr']
+    # assert addrs[0] == new_next_lf_addr
+    assert addrs[1] == test_d_node_data['prev_d_addr']
+    assert remains == test_d_node_data['f_w']
+   
 
 def find_reserve_available_cell():
     pass
@@ -199,12 +225,7 @@ def test_make_free_list(test_enc_obj: Encode):
     assert free_entry_count == FREE_LIST_INIT_SIZE 
 
 
-# TODO test make arrays
-def test_encode_make_arrays(test_enc_obj_w_lists: Encode, total_nodes_num: int):
-    test_enc_obj_w_lists.make_arrays()
-
-    # l = [n if n is not None for n in nditer(test_enc_obj_w_lists.search_array):]
-    # assert test_enc_obj_w_lists.search_array
+def test_enc():
     pass
 
 
@@ -222,6 +243,9 @@ def test_make_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
     assert len(test_enc_obj.dual_table.keys()) == len(test_data.keys())
     assert len(test_enc_obj.d_available_cells) == len(test_enc_obj.s_available_cells)
 
+    for i in range(test_enc_obj.search_array.size):
+        if i not in test_enc_obj.s_available_cells:
+            assert test_enc_obj.search_array[i] != None
 
-def test_enc():
-    pass
+        if i not in test_enc_obj.d_available_cells:
+            assert test_enc_obj.dual_array[i] != None
