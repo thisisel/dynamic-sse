@@ -238,7 +238,7 @@ class Server:
 
             # 2-c
             if (lw_head_encrypted := self.search_table.get(f_w)) is None:
-                logger.debug(f"New word detected while adding new doc")
+                logger.debug(f"New word detected while adding a new doc")
                 head_s_addr = self.zero_bytes
                 head_d_addr = self.zero_bytes
             else:
@@ -336,7 +336,7 @@ class Server:
             if addrs[5] == self.zero_bytes:
                 self.search_table.pop(f_w)
                 logger.debug(
-                    """Removed unique word in the file that is being deleted 
+                    """Removed a unique word in the file which is being deleted 
                     from the search table"""
                 )
 
