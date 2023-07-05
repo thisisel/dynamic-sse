@@ -129,7 +129,7 @@ class Encode:
             self.s_available_cells
         ) and FREE_LIST_INIT_SIZE <= len(self.d_available_cells):
 
-            prev_s_free_addr = self.ZERO.encode()
+            prev_s_free_addr = self.zero_bytes
             #TODO fix phi_star == d_free_addr 
             # prev_d_free_addr = self.ZERO.encode()
 
