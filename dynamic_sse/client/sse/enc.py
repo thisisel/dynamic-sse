@@ -262,7 +262,6 @@ class Encode:
                     ske.enc_file(
                         in_file=entry, out_file=f"{encoded_dir}/file_{file_num}.bin"
                     )
-                    #TODO insert c in db along with f_id as pk
 
                     logger.debug(
                         f"[{file_num}] - File {entry} was encoded under {encoded_dir}/file_{file_num}.bin"
