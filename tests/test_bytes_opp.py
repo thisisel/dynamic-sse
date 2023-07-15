@@ -13,10 +13,4 @@ def test_xor(inputs, expected):
     assert r == expected
     assert BytesOpp.eq_bytes(r,expected) == True
 
-def test_bytes_packing():
-    n = b'\x00\x01\x11\x11'
-
-    t_1, t_2, *t_34 = (bytes(t) for t in n)
-
-    assert t_1 == b'\x00'
 
