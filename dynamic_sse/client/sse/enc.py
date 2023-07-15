@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from numpy import empty
 from numpy._typing import NDArray
 
-from dynamic_sse.client.ske import SecretKeyEnc
+from dynamic_sse.client.types import SecretKeyEnc
 from dynamic_sse.client.utils import PseudoRandomFunc
 from dynamic_sse.tools import BytesOpp, FileTools, RandOracles, DataTools
 from log import get_logger

@@ -1,5 +1,5 @@
 from typing import List
-from dynamic_sse.client.ske import SecretKeyEnc
+from dynamic_sse.client.types import SecretKeyEnc
 
 
 class Decode:
