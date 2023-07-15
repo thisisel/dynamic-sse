@@ -263,13 +263,13 @@ class Encode:
                         in_file=entry, out_file=f"{encoded_dir}/file_{file_num}.bin"
                     )
 
-                    logger.debug(
-                        f"[{file_num}] - File {entry} was encoded under {encoded_dir}/file_{file_num}.bin"
-                    )
-
                     # self.file_dict.update({f_id: entry})
                     self.file_dict.update({f_id: f'{encoded_dir}/file_{file_num}.bin'})
                     file_num += 1
+
+                    logger.debug(
+                        f"[{file_num}] - File {entry} was encoded under {encoded_dir}/file_{file_num}.bin"
+                    )
 
                 except IndexError:
                     self.file_dict.pop(f_id)
