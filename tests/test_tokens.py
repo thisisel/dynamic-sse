@@ -21,7 +21,7 @@ def test_t_factory(test_keys):
 
 
 def test_search_t(test_t_factory: TokenFactory, test_keys):
-    t1, t2, t3 = test_t_factory.search_t(word=WORD)
+    t1, t2, t3 = test_t_factory.get_search_t(word=WORD)
     f_w, g_w, p_w = PseudoRandomFunc.get_word_hashes_ctx(
         word=WORD,
         k1=test_keys[0],

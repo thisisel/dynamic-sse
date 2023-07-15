@@ -20,7 +20,7 @@ class TokenFactory:
         self.addr_len = addr_len
         self.ZERO = "\0" * self.addr_len
 
-    def search_t(self, word: str):
+    def get_search_t(self, word: str):
         return PseudoRandomFunc.get_word_hashes_ctx(
             word=word.lower(),
             k1=self.k1,

@@ -76,7 +76,7 @@ def test_attributes_eq(test_t_factory: Server, test_enc_obj):
 def test_search(
     test_server: Server, test_t_factory: TokenFactory, test_enc_obj: Encode
 ):
-    search_t = test_t_factory.search_t(word="ground")
+    search_t = test_t_factory.get_search_t(word="ground")
     found_f_ids = test_server.search(search_t=search_t)
 
     assert len(found_f_ids) != 0
@@ -90,7 +90,7 @@ def test_search(
 
 
 def test_search_not_found(test_server: Server, test_t_factory: TokenFactory):
-    search_t = test_t_factory.search_t(word="elahe")
+    search_t = test_t_factory.get_search_t(word="elahe")
     found_f_ids = test_server.search(search_t=search_t)
 
     assert len(found_f_ids) == 0
@@ -103,7 +103,7 @@ def test_add(
     new_word: Tuple[str, bytes],
 ):
 
-    search_t = test_t_factory.search_t(word=new_word["word"])
+    search_t = test_t_factory.get_search_t(word=new_word["word"])
     found_f_ids = test_server.search(search_t=search_t)
 
     assert len(found_f_ids) == 0
@@ -153,7 +153,7 @@ def test_delete(
     )
     test_server.add(add_t=add_t)
 
-    search_t = test_t_factory.search_t(word=new_word["word"])
+    search_t = test_t_factory.get_search_t(word=new_word["word"])
     found_f_ids = test_server.search(search_t=search_t)
 
     assert found_f_ids[0] == new_file["f_id"]
