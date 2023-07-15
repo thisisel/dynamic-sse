@@ -72,7 +72,7 @@ class TokenFactory:
 
         return f_file, g_file, file_lambdas
 
-    def del_t(self, file: str, file_id: bytes):
+    def get_del_t(self, file: str, file_id: bytes):
         f_file, g_file, p_file = PseudoRandomFunc.get_file_hashes(
             file=file,
             k1=self.k1,

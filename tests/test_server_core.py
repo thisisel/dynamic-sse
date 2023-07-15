@@ -158,7 +158,7 @@ def test_delete(
 
     assert found_f_ids[0] == new_file["f_id"]
 
-    del_t = test_t_factory.del_t(file=new_file["f_path"], file_id=new_file["f_id"])
+    del_t = test_t_factory.get_del_t(file=new_file["f_path"], file_id=new_file["f_id"])
     result = test_server.delete(del_t=del_t)
 
     assert result == True
@@ -177,7 +177,7 @@ def test_delete_non_existent_file(
     new_file: Dict[bytes, str],
 ):
 
-    del_t = test_t_factory.del_t(file=new_file["f_path"], file_id=new_file["f_id"])
+    del_t = test_t_factory.get_del_t(file=new_file["f_path"], file_id=new_file["f_id"])
     result = test_server.delete(del_t=del_t)
 
     assert result == False
