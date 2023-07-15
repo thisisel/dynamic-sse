@@ -45,10 +45,11 @@ def new_file(test_keys, test_server: Server):
         length=test_server.addr_len,
     )
 
-    yield {"f_id": f_id, "f_path": f_path, "f_f" : f_f}
+    yield {"f_id": f_id, "f_path": f_path, "f_f": f_f}
 
     out_path = Path(f"{TDataDir.ENC_DIR.value}/file_{str(f_id)}.bin")
     out_path.unlink(missing_ok=True)
+
 
 @pytest.fixture
 def new_word(test_keys, test_server: Server):
@@ -60,8 +61,8 @@ def new_word(test_keys, test_server: Server):
         k3=test_keys[2],
         length=test_server.addr_len * 2,
     )
-   
-    return {'word' : word, 'f_w' : f_w}
+
+    return {"word": word, "f_w": f_w}
 
 
 def test_attributes_eq(test_t_factory: Server, test_enc_obj):
@@ -101,21 +102,21 @@ def test_add(
     new_file: Dict[bytes, str],
     new_word: Tuple[str, bytes],
 ):
-    
-    search_t = test_t_factory.search_t(word=new_word['word'])
+
+    search_t = test_t_factory.search_t(word=new_word["word"])
     found_f_ids = test_server.search(search_t=search_t)
 
     assert len(found_f_ids) == 0
 
-    add_t = test_t_factory.add_t(
+    add_t = test_t_factory.get_add_t(
         file_id=new_file["f_id"],
         file=new_file["f_path"],
         encoded_dir=TDataDir.ENC_DIR.value,
     )
     test_server.add(add_t=add_t)
 
-    assert new_file['f_f'] in test_server.dual_table.keys()
-    assert new_word['f_w'] in test_server.search_table.keys()
+    assert new_file["f_f"] in test_server.dual_table.keys()
+    assert new_word["f_w"] in test_server.search_table.keys()
 
     found_f_ids = test_server.search(search_t=search_t)
 
@@ -125,7 +126,7 @@ def test_add(
 def test_add_duplicate_file(
     test_server: Server, test_t_factory: TokenFactory, new_file: Dict[bytes, str]
 ):
-    add_t = test_t_factory.add_t(
+    add_t = test_t_factory.get_add_t(
         file_id=new_file["f_id"],
         file=new_file["f_path"],
         encoded_dir=TDataDir.ENC_DIR.value,
@@ -145,26 +146,24 @@ def test_delete(
     new_word: Tuple[str, bytes],
 ):
 
-    add_t = test_t_factory.add_t(
+    add_t = test_t_factory.get_add_t(
         file_id=new_file["f_id"],
         file=new_file["f_path"],
         encoded_dir=TDataDir.ENC_DIR.value,
     )
     test_server.add(add_t=add_t)
 
-    search_t = test_t_factory.search_t(word=new_word['word'])
+    search_t = test_t_factory.search_t(word=new_word["word"])
     found_f_ids = test_server.search(search_t=search_t)
 
     assert found_f_ids[0] == new_file["f_id"]
-
-
 
     del_t = test_t_factory.del_t(file=new_file["f_path"], file_id=new_file["f_id"])
     result = test_server.delete(del_t=del_t)
 
     assert result == True
-    assert new_file['f_f'] not in test_server.dual_table.keys()
-    assert test_server.search_table.get(new_word['f_w']) is None
+    assert new_file["f_f"] not in test_server.dual_table.keys()
+    assert test_server.search_table.get(new_word["f_w"]) is None
 
     found_f_ids = test_server.search(search_t=search_t)
 

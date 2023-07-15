@@ -8,6 +8,7 @@ from os import urandom
 WORD = "elahe"
 ADDR_LEN = randint(4, 12)
 
+
 @pytest.fixture
 def test_t_factory(test_keys):
     t_factory = TokenFactory(keys=test_keys, addr_len=ADDR_LEN)
@@ -22,7 +23,11 @@ def test_t_factory(test_keys):
 def test_search_t(test_t_factory: TokenFactory, test_keys):
     t1, t2, t3 = test_t_factory.search_t(word=WORD)
     f_w, g_w, p_w = PseudoRandomFunc.get_word_hashes_ctx(
-        word=WORD, k1=test_keys[0], k2=test_keys[1], k3=test_keys[2], length=2 * ADDR_LEN
+        word=WORD,
+        k1=test_keys[0],
+        k2=test_keys[1],
+        k3=test_keys[2],
+        length=2 * ADDR_LEN,
     )
 
     assert len(t1) == K
@@ -39,14 +44,12 @@ def test_add_t(test_t_factory: TokenFactory):
     f_path = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain/three.txt"
     encode_dir = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/encrypted"
 
-    f_file, g_file, file_lambdas = test_t_factory.add_t(
+    f_file, g_file, file_lambdas = test_t_factory.get_add_t(
         file_id=f_id, file=f_path, encoded_dir=encode_dir
     )
 
     for lmb in file_lambdas:
-        assert len(lmb) == 4*K + 9*ADDR_LEN + len(f_id) 
-
-
+        assert len(lmb) == 4 * K + 9 * ADDR_LEN + len(f_id)
 
 
 def test_del_t(test_t_factory: TokenFactory, test_keys):
