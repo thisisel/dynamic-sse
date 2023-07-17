@@ -25,7 +25,7 @@ class Server:
 
         self.k = k
         self.addr_len = self.search_array.size.bit_length()
-        self.file_id_len = self.k
+        self.f_id_len = self.k
         self.ZERO = "\0" * self.addr_len
         self.zero_bytes = self.ZERO.encode()
 
@@ -45,7 +45,7 @@ class Server:
             t_lambda_remaining, 2 * self.addr_len
         )
         new_s_entry, t_lambda_remaining = DataTools.entry_splitter(
-            t_lambda_remaining, self.file_id_len + self.addr_len
+            t_lambda_remaining, self.f_id_len + self.addr_len
         )
         r, t_lambda_remaining = DataTools.entry_splitter(t_lambda_remaining, self.k)
         new_d_entry, r_p = DataTools.entry_splitter(
@@ -82,19 +82,19 @@ class Server:
     ) -> Tuple[bytes, bytes, bytes]:
 
         entry, r = DataTools.entry_splitter(
-            self.search_array[int.from_bytes(s_addr)], self.file_id_len + self.addr_len
+            self.search_array[int.from_bytes(s_addr)], self.f_id_len + self.addr_len
         )
 
         if p_w:
             entry = BytesOpp.xor_bytes(
                 entry,
                 RandOracles.h_1(
-                    data=p_w + r, addr_len=self.addr_len, f_id_len=self.file_id_len
+                    data=p_w + r, addr_len=self.addr_len, f_id_len=self.f_id_len
                 ),
             )
 
         f_id, next_s_addr = DataTools.entry_splitter(
-            entry=entry, split_ptr=self.file_id_len
+            entry=entry, split_ptr=self.f_id_len
         )
 
         return f_id, next_s_addr, r
@@ -250,7 +250,7 @@ class Server:
             # 2-d
             self.search_array[int.from_bytes(s_free_addr)] = (
                 BytesOpp.xor_bytes(
-                    new_s_entry_hashed, ("\0" * self.file_id_len).encode() + head_s_addr
+                    new_s_entry_hashed, ("\0" * self.f_id_len).encode() + head_s_addr
                 )
                 + r
             )

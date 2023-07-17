@@ -28,9 +28,9 @@ class Encode:
 
         self.search_array_size = size_c+ FREE_LIST_INIT_SIZE
         self.addr_len = self.search_array_size.bit_length()
+        self.f_id_len = self.k
         self.ZERO = "\0" * self.addr_len
         self.zero_bytes = self.ZERO.encode()
-        self.f_id_len = "\0" * self.k
 
         self.search_array = empty(self.search_array_size, dtype=object)
         self.dual_array = empty(self.search_array_size, dtype=object)
