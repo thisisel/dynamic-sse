@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 
 class Encode:
-    def __init__(self, size_c: int, k: int, keys: Tuple[bytes]) -> None:
+    def __init__(self, size_c: int, keys: Tuple[bytes], f_id_len : int = 32) -> None:
         self.k = len(keys[0])
         self.k1 = keys[0]
         self.k2 = keys[1]
@@ -28,7 +28,7 @@ class Encode:
 
         self.search_array_size = size_c+ FREE_LIST_INIT_SIZE
         self.addr_len = self.search_array_size.bit_length()
-        self.f_id_len = self.k
+        self.f_id_len = f_id_len
         self.ZERO = "\0" * self.addr_len
         self.zero_bytes = self.ZERO.encode()
 
