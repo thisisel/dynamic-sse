@@ -1,4 +1,3 @@
-from os import walk
 import pytest
 from pathlib import Path
 from enum import Enum
@@ -13,6 +12,7 @@ class TDataDir(Enum):
     PLAIN_DIR = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain"
     ENC_DIR = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/encrypted"
     DEC_DIR = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/decrypted"
+    DB_DIR = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data"
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def test_enc_obj(test_keys):
     if n == 0:
         raise FileNotFoundError
     
-    test_enc = Encode(size_c=s, k=K, keys=test_keys)
+    test_enc = Encode(size_c=s, keys=test_keys)
 
     yield test_enc
 
