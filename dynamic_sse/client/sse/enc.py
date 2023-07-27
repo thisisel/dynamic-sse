@@ -35,8 +35,8 @@ class Encode:
         self.search_array = empty(self.search_array_size, dtype=object)
         self.dual_array = empty(self.search_array_size, dtype=object)
 
-        self.s_available_cells = [i for i in range(0, self.search_array_size)] #TODO reserve i=0
-        self.d_available_cells = [i for i in range(0, self.search_array_size)]
+        self.s_available_cells = [i for i in range(1, self.search_array_size)] 
+        self.d_available_cells = [i for i in range(1, self.search_array_size)]
 
         self.search_table = {}
         self.dual_table = {}
