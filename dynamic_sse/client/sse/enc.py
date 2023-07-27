@@ -204,24 +204,14 @@ class Encode:
         self.dual_table[f_file] = BytesOpp.xor_bytes(d_addr, g_file)
         logger.debug(f'New File Encoded f_id = {f_id}')
 
-    def update_d_node_prev_addrs(self, d_addr: bytes, p_file: bytes, prev_s_addr: bytes, prev_d_addr: bytes):
-        d_node = self.dual_array[int.from_bytes(d_addr)]
-        d_entry_hashed, rd = DataTools.entry_splitter(entry=d_node, split_ptr=6*self.addr_len+self.k)
+    def update_next_d_node(self, next_d_addr: bytes, new_prev_s_addr: bytes, new_prev_d_addr: bytes):
+        next_d_node = self.dual_array[int.from_bytes(next_d_addr)]
+        d_entry_hashed, rd = DataTools.entry_splitter(entry=next_d_node, split_ptr=6*self.addr_len+self.k)
         
-        h2_val = RandOracles.h_2(data=p_file+rd, addr_len=self.addr_len, k=self.k)
-        d_entry = BytesOpp.xor_bytes(d_entry_hashed, h2_val)
+        updated_addrs = self.zero_bytes + new_prev_d_addr + 2 * self.zero_bytes + new_prev_s_addr + self.zero_bytes + ("\0"*self.k).encode()
+        updated_hashed_entry = BytesOpp.xor_bytes(a=d_entry_hashed, b=updated_addrs)
         
-        old_prev_d_addr = d_entry[self.addr_len : 2 * self.addr_len]
-        old_prev_s_addr = d_entry[4 * self.addr_len : 5 * self.addr_len]
-
-        wiper_str = self.zero_bytes + old_prev_d_addr +2 * self.zero_bytes + old_prev_s_addr + self.zero_bytes + ("\0" * self.k).encode()
-        plug_str = self.zero_bytes + prev_d_addr +2 * self.zero_bytes + prev_s_addr + self.zero_bytes + ("\0" * self.k).encode()
-
-        pluggable_entry = BytesOpp.xor_bytes(d_entry, wiper_str)
-        updated_entry = BytesOpp.xor_bytes(pluggable_entry, plug_str)
-
-        updated_hashed_entry = BytesOpp.xor_bytes(updated_entry, h2_val)
-        self.dual_array[int.from_bytes(d_addr)] = updated_hashed_entry + rd
+        self.dual_array[int.from_bytes(next_d_addr)] = updated_hashed_entry + rd
 
     def enc(self, raw_files_dir: str, encoded_dir: str, ske: SecretKeyEnc):
         raw_files_dir_path = Path(raw_files_dir)
