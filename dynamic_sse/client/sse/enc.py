@@ -77,6 +77,13 @@ class Encode:
         )
         available_cells.append(cell_addr)
 
+    def pad_dummy_cells(self):
+        for s_idx in self.s_available_cells:
+            self.search_array[s_idx] = urandom(self.f_id_len + self.addr_len + self.k)
+            
+        for d_idx in self.d_available_cells:
+            self.dual_array[d_idx] = urandom(6 * self.addr_len + 2 * self.k)
+
     def make_search_node(
         self, file_id: bytes, next_s_addr: bytes, p_w: bytes, ri_s: bytes
     ) -> bytes:
@@ -268,6 +275,7 @@ class Encode:
                     continue
 
         self.make_free_lists()
+        self.pad_dummy_cells()
         
         return self.search_array, self.search_table, self.dual_array, self.dual_table
 
