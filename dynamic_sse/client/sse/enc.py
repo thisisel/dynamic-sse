@@ -1,7 +1,7 @@
 from os import urandom
 from pathlib import Path
 from secrets import choice
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 from numpy import empty
 from numpy._typing import NDArray
