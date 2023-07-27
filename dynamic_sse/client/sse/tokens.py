@@ -67,9 +67,11 @@ class TokenFactory:
             t_lambda = f_t + g_t + xor_h1 + r + xor_h2 + r_p
             file_lambdas.append(t_lambda)
 
-        ske = SecretKeyEnc(fernet_keys=self.k4)  # TODO accept a list as k4
+        ske = SecretKeyEnc(fernet_keys=self.k4) 
         ske.enc_file(in_file=file, out_file=f"{encoded_dir}/file_{str(file_id)}.bin")
 
+        #TODO append encrypted file or file path(to e taken care of in core)
+        # return {'add_t' : (f_file, g_file, file_lambdas), enc_f_path : r"{encoded_dir}/file_{str(file_id)}.bin"}
         return f_file, g_file, file_lambdas
 
     def get_del_t(self, file: str, file_id: bytes):
