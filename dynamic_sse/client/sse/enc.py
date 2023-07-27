@@ -56,12 +56,12 @@ class Encode:
             if arr is self.search_array
             else self.d_available_cells
         )
-        availble_addr = None
+        availble_cell = None
 
         try:
-            availble_addr = choice(available_cells)
-            available_cells.remove(availble_addr)
-            return availble_addr
+            availble_cell = choice(available_cells)
+            available_cells.remove(availble_cell)
+            return availble_cell
        
         except IndexError:
             logger.error(
