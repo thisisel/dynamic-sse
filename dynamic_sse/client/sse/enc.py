@@ -202,7 +202,7 @@ class Encode:
             self.dual_array[d_cell] = dual_node
 
             if next_d_addr != self.zero_bytes:
-                self.update_d_node_prev_addrs(d_addr=next_d_addr, p_file=p_file, prev_s_addr=s_addr, prev_d_addr=d_addr)
+                self.update_next_d_node(next_d_addr=next_d_addr,new_prev_s_addr=s_addr, new_prev_d_addr=d_addr)
            
             self.search_table[f_w] = BytesOpp.xor_bytes(s_addr+d_addr, g_w)
 
