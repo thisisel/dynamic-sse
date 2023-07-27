@@ -140,8 +140,7 @@ class Encode:
                 self.search_array[s_free_cell] = last_s_free_addr + d_free_cell.to_bytes(
                     self.addr_len
                 )
-                self.dual_array[d_free_cell] = urandom(6 * self.addr_len + self.k)
-                # self.dual_array[d_free_cell] = prev_d_free_addr
+                self.dual_array[d_free_cell] = 6 * self.zero_bytes + ("\0"*self.k).encode()
 
                 last_s_free_addr = s_free_cell.to_bytes(
                     self.addr_len
