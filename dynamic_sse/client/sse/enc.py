@@ -129,7 +129,7 @@ class Encode:
             self.s_available_cells
         ) and FREE_LIST_INIT_SIZE <= len(self.d_available_cells):
 
-            prev_s_free_addr = self.zero_bytes
+            last_s_free_addr = self.zero_bytes
             #TODO fix phi_star == d_free_addr 
             # prev_d_free_addr = self.ZERO.encode()
 
@@ -137,18 +137,18 @@ class Encode:
                 s_free_cell = self.find_reserve_available_cell(self.search_array)
                 d_free_cell = self.find_reserve_available_cell(self.dual_array)
 
-                self.search_array[s_free_cell] = prev_s_free_addr + d_free_cell.to_bytes(
+                self.search_array[s_free_cell] = last_s_free_addr + d_free_cell.to_bytes(
                     self.addr_len
                 )
                 self.dual_array[d_free_cell] = urandom(6 * self.addr_len + self.k)
                 # self.dual_array[d_free_cell] = prev_d_free_addr
 
-                prev_s_free_addr = s_free_cell.to_bytes(
+                last_s_free_addr = s_free_cell.to_bytes(
                     self.addr_len
-                )  # last iteration = last search array free
+                ) 
                 # prev_d_free_addr = d_free_cell.to_bytes(self.addr_len)
 
-            self.search_table[FREE] = prev_s_free_addr + self.ZERO.encode()
+            self.search_table[FREE] = last_s_free_addr + self.zero_bytes
 
         else:
             raise IndexError(
