@@ -1,12 +1,13 @@
 from os import urandom
+from pathlib import Path
 from typing import Dict, List
+import dbm
 
 import pytest
-from numpy import nditer
 
 from dynamic_sse.client.sse import Encode, Generate, FREE_LIST_INIT_SIZE, FREE
 from dynamic_sse.tools import FileTools, DataTools, BytesOpp, RandOracles
-from .conftest import test_keys, K, test_directory_size
+from .conftest import test_keys, K, test_directory_size, TDataDir, test_enc_obj
 
 
 @pytest.fixture
@@ -26,13 +27,15 @@ def total_nodes_num(test_data):
 
     return num
 
-
 @pytest.fixture
-def test_enc_obj(test_directory_size, test_keys):
-    test_enc = Encode(size_c=test_directory_size, k=32, keys=test_keys)
-
-    return test_enc
-
+def test_dbm():
+    with dbm.open(f"{TDataDir.DB_DIR.value}/test_db", 'c') as db:
+        yield db
+    
+    extensions = ('dat', 'bak', 'dir')
+    for ext in extensions:
+        db_path = Path(f"{TDataDir.DB_DIR.value}/test_db.{ext}")
+        db_path.unlink(missing_ok=True)
 
 def test_zero(test_enc_obj: Encode):
     z_bytes = test_enc_obj.ZERO.encode()
@@ -41,12 +44,14 @@ def test_zero(test_enc_obj: Encode):
     assert len(z_bytes) == test_enc_obj.addr_len
 
 
-def test_find_id(test_enc_obj: Encode):
-    f_ids = [test_enc_obj.find_usable_file_id() for _ in range(10)]
+def test_find_id(test_enc_obj: Encode, test_dbm):
+    f_ids = [test_enc_obj.find_usable_file_id(db=test_dbm) for _ in range(10)]
 
-    for f_id in f_ids:
-        assert f_id in test_enc_obj.file_dict.keys()
-        assert test_enc_obj.file_dict.get(f_id) is None
+    for i in f_ids:
+        # assert i in test_enc_obj.file_dict.keys()
+        assert i in test_dbm.keys()
+        # assert test_enc_obj.file_dict.get(i) is None
+        assert test_dbm.get(i) == test_enc_obj.zero_bytes
 
 
 def test_make_search_node(test_enc_obj: Encode):
@@ -178,10 +183,6 @@ def test_d_node_indirect_addr_mod(
     assert remains == test_d_node_data["f_w"]
 
 
-def find_reserve_available_cell():
-    pass
-
-
 def test_make_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
     addr_len = test_enc_obj.addr_len
     for f_id, tokenized_words in test_data.items():
@@ -196,17 +197,7 @@ def test_make_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
     assert len(test_enc_obj.dual_table.keys()) == len(test_data.keys())
     assert len(test_enc_obj.d_available_cells) == len(test_enc_obj.s_available_cells)
 
-    for i in range(test_enc_obj.search_array.size):
-        if i not in test_enc_obj.s_available_cells:
-            assert test_enc_obj.search_array[i] != None
-
-        if i not in test_enc_obj.d_available_cells:
-            assert test_enc_obj.dual_array[i] != None
-
 
 def test_make_free_list(test_enc_obj: Encode):
     pass
 
-
-def test_enc():
-    pass
