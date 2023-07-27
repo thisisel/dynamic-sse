@@ -1,9 +1,8 @@
 from typing import Dict, Iterable, List, Tuple
-from os import urandom
 from numpy._typing import NDArray
 from log import get_logger
 from dynamic_sse.tools import BytesOpp, DataTools, RandOracles
-from dynamic_sse.config import FREE
+from dynamic_sse.server.config import FREE
 
 logger = get_logger(__name__)
 
@@ -35,7 +34,7 @@ class Server:
             entry=s_last_free_padded, split_ptr=self.addr_len
         )
 
-        logger.debug(f"retrieved {s_free_addr} as current free addr")
+        # logger.debug(f"retrieved {s_free_addr} as current free addr")
 
         return s_free_addr
 
@@ -74,7 +73,17 @@ class Server:
             a, entry = DataTools.entry_splitter(entry, self.addr_len)
             addrs.append(a)
 
+        # addrs_dict = {
+        #    "next_lf_addr" : addrs[0],
+        #    "prev_d_addr" : addrs[1],
+        #    "next_d_addr" : addrs[2],
+        #    "s_addr" : addrs[3],
+        #    "prev_s_addr" : addrs[4],
+        #    "next_s_addr" : addrs[5],
+        # }
+       
         f_w = entry
+
         return addrs, f_w, r_d
 
     def _parse_s_entry(
@@ -112,9 +121,9 @@ class Server:
     def _update_prev_s_entry(self, addrs: Iterable[bytes]) -> None:
         # 3-f-1
 
-        if (prev_s_addr := addrs[4]) == self.zero_bytes:
-            logger.debug("prev s entry does not exist")
-            return
+        if int.from_bytes(prev_s_addr := addrs[4]) >= self.search_array.size:
+            logger.debug("ARRAY OUT OF BAND. prev_s_addr is out of search_array range")
+            raise IndexError
 
         prev_f_id_hashed, prev_next_addr_hashed, prev_r = self._parse_s_entry(
             s_addr=prev_s_addr
@@ -127,60 +136,92 @@ class Server:
             prev_f_id_hashed + prev_s_xor_chain + prev_r
         )
 
-    def _update_prev_d_entry(self, d_addr: bytes, addrs: Iterable[bytes]) -> None:
+    def _update_prev_d_entry(self, old_next_d_addr: bytes, addrs: Iterable[bytes]) -> None:
         # 3-f-2
 
-        if (prev_d_addr := addrs[1]) == self.zero_bytes:
-            logger.debug("prev_d_entry does not exist")
-            return
+        if int.from_bytes(addrs[1]) >= self.search_array.size:
+            logger.debug("ARRAY OUT OF BAND. prev_d_addr is out of dual_array range")
+            raise IndexError
 
         prev_addrs_hashed, prev_f_w_hashed, prev_r_d = self._parse_d_entry(
-            d_addr=prev_d_addr
+            d_addr=addrs[1]
         )
 
-        prev_d_xor_chain_1 = BytesOpp.xor_bytes(prev_addrs_hashed[2], d_addr)
-        prev_d_xor_chain_1 = BytesOpp.xor_bytes(prev_d_xor_chain_1, addrs[2])
-        prev_d_xor_chain_2 = BytesOpp.xor_bytes(prev_addrs_hashed[5] + addrs[3])
-        prev_d_xor_chain_2 = BytesOpp.xor_bytes(prev_d_xor_chain_2 + addrs[5])
+        next_d_addr_wiped = BytesOpp.xor_bytes(prev_addrs_hashed[2], old_next_d_addr)
+        next_d_addr_updated = BytesOpp.xor_bytes(next_d_addr_wiped, addrs[2])
+      
+        next_s_addr_wiped = BytesOpp.xor_bytes(prev_addrs_hashed[5] , addrs[3])
+        next_s_addr_updated = BytesOpp.xor_bytes(next_s_addr_wiped , addrs[5])
 
         self.dual_array[int.from_bytes(addrs[1])] = (
             prev_addrs_hashed[0]
             + prev_addrs_hashed[1]
-            + prev_d_xor_chain_1
+            + next_d_addr_updated
             + prev_addrs_hashed[3]
             + prev_addrs_hashed[4]
-            + prev_d_xor_chain_2
+            + next_s_addr_updated
             + prev_f_w_hashed
             + prev_r_d
         )
 
-    def _update_next_d_entry(self, d_addr: bytes, addrs: Iterable[bytes]) -> None:
+    def _update_next_d_entry(self, old_prev_d_addr: bytes, addrs: Iterable[bytes]) -> None:
         # 3-g
 
-        if (next_d_addr := addrs[2]) == self.zero_bytes:
-            logger.debug("next_d_addr does not exist")
-            return
+        if int.from_bytes(addrs[2]) >= self.search_array.size:
+            logger.debug("ARRAY OUT OF BAND. next_d_addr is out of dual_array range")
+            raise IndexError
 
         next_addrs_hashed, next_f_w_hashed, next_r_d = self._parse_d_entry(
-            d_addr=next_d_addr
+            d_addr=addrs[2]
         )
 
-        next_d_xor_chain_1 = BytesOpp.xor_bytes(next_addrs_hashed[1], d_addr)
-        next_d_xor_chain_1 = BytesOpp.xor_bytes(next_d_xor_chain_1, addrs[1])
-        next_d_xor_chain_2 = BytesOpp.xor_bytes(next_addrs_hashed[4], addrs[3])
-        next_d_xor_chain_2 = BytesOpp.xor_bytes(next_d_xor_chain_2, addrs[4])
+        prev_d_addr_wiped = BytesOpp.xor_bytes(next_addrs_hashed[1], old_prev_d_addr)
+        prev_d_addr_updated = BytesOpp.xor_bytes(prev_d_addr_wiped, addrs[1])
+        
+        prev_s_addr_wiped = BytesOpp.xor_bytes(next_addrs_hashed[4], addrs[3])
+        prev_s_addr_updated = BytesOpp.xor_bytes(prev_s_addr_wiped, addrs[4])
 
         self.dual_array[int.from_bytes(addrs[2])] = (
             next_addrs_hashed[0]
-            + next_d_xor_chain_1
+            + prev_d_addr_updated
             + next_addrs_hashed[2]
             + next_addrs_hashed[3]
-            + next_d_xor_chain_2
+            + prev_s_addr_updated
             + next_addrs_hashed[5]
             + next_f_w_hashed
             + next_r_d
         )
 
+        return next_addrs_hashed[3]
+
+    def _update_neighbors(self, addrs :Iterable[bytes], d_addr: bytes, f_w : bytes):
+        
+        # prev_s_addr = addrs[4]
+        # next_s_addr = addrs[5]
+          
+        if addrs[5] == self.zero_bytes and addrs[4] == self.zero_bytes:
+            # lw single node
+            self.search_table.pop(f_w)
+        
+        elif addrs[5] == self.zero_bytes and addrs[4] != self.zero_bytes:
+            # lw last node
+            self._update_prev_s_entry(addrs)
+            self._update_prev_d_entry(old_next_d_addr=d_addr, addrs=addrs)
+            
+        elif addrs[4] == self.zero_bytes and addrs[5] != self.zero_bytes:
+            # lw first node of many
+            new_lw_head_s_addr = self._update_next_d_entry(old_prev_d_addr=d_addr, addrs=addrs)
+            
+            #update search_table
+            lw_head_wiped = BytesOpp.xor_bytes(a=self.search_table[f_w], b=addrs[3]+d_addr)
+            self.search_table[f_w] = BytesOpp.xor_bytes(a=lw_head_wiped, b=new_lw_head_s_addr+addrs[2])
+
+        else : 
+            # lw middle node
+            self._update_prev_s_entry(addrs)
+            self._update_prev_d_entry(old_next_d_addr=d_addr, addrs=addrs)
+            self._update_next_d_entry(old_prev_d_addr=d_addr, addrs=addrs)
+        
     def search(self, search_t: Tuple[bytes, bytes, bytes]):
         f_w, g_w, p_w = search_t
 
@@ -203,9 +244,8 @@ class Server:
 
         # 2
         is_lf_head = True
-        prev_d_free_addr = (
-            self.zero_bytes
-        )  # TODO fix while creating free list in client
+        prev_d_free_addr = self.zero_bytes
+
         for w_lambda in all_lambdas:
 
             (
@@ -219,6 +259,9 @@ class Server:
 
             # 2-a
             s_free_addr = self._find_last_free_addr()
+            if self.search_array.size < int.from_bytes(s_free_addr):
+                logger.debug(f"array out of band\n s_free_addrs = {s_free_addr}\n f_w = {f_w}")
+
             s_free_entry = self.search_array[int.from_bytes(s_free_addr)]
             prev_s_free_addr, d_free_addr = DataTools.entry_splitter(
                 s_free_entry, self.addr_len
@@ -239,6 +282,8 @@ class Server:
             # 2-c
             if (lw_head_encrypted := self.search_table.get(f_w)) is None:
                 logger.debug(f"New word detected while adding a new doc")
+                logger.debug(f"New  f_w '{f_w}")
+             
                 head_s_addr = self.zero_bytes
                 head_d_addr = self.zero_bytes
             else:
@@ -246,6 +291,8 @@ class Server:
                 head_s_addr, head_d_addr = DataTools.entry_splitter(
                     lw_head_addrs, self.addr_len
                 )
+             
+                logger.debug(f"old w f_w '{f_w}")
 
             # 2-d
             self.search_array[int.from_bytes(s_free_addr)] = (
@@ -292,10 +339,14 @@ class Server:
                         + s_free_addr
                         + self.zero_bytes
                         + head_s_addr
-                        + f_w
+                        + ("\0"*self.k).encode()
                     ),
                 )
                 + r_p
+            )
+            prev_s_free_entry = self.search_array[int.from_bytes(prev_s_free_addr)]
+            _, prev_d_free_addr = DataTools.entry_splitter(
+                prev_s_free_entry, self.addr_len
             )
 
             # 2-h
@@ -316,44 +367,40 @@ class Server:
             return False
 
         # 2
-        d_addr = BytesOpp.xor_bytes(lf_head_encrypted, g_file)
+        next_lf_d_addr = BytesOpp.xor_bytes(lf_head_encrypted, g_file)
 
         # 3
-        while d_addr != self.zero_bytes:
+        while next_lf_d_addr != self.zero_bytes:
             # 3-a
-            addrs, f_w, r_d = self._parse_d_entry(d_addr=d_addr, p_file=p_file)
-
-            # 3-b
-            self.dual_array[int.from_bytes(d_addr)] = urandom(
-                6 * self.addr_len + self.k
-            )
+            addrs, f_w, r_d = self._parse_d_entry(d_addr=next_lf_d_addr, p_file=p_file)
 
             # 3-c
             last_free_addr = self._find_last_free_addr()
 
+            try:
+                 # 3-e            
+                self.search_array[int.from_bytes(addrs[3])] = last_free_addr + next_lf_d_addr
+
+            except IndexError as idx_err:
+                logger.error(idx_err)
+                return False
+           
+            try:
+                 #3-f and 3-g
+                self._update_neighbors(addrs=addrs, d_addr=next_lf_d_addr, f_w=f_w)
+            
+            except IndexError as idx_err:
+                logger.error(idx_err)
+                return False
+           
+            # 3-b 
+            self.dual_array[int.from_bytes(next_lf_d_addr)] = 6 * self.zero_bytes+("\0"*self.k).encode()
+           
             # 3-d
             self.search_table[FREE] = addrs[3] + self.zero_bytes
-            if addrs[5] == self.zero_bytes:
-                self.search_table.pop(f_w)
-                logger.debug(
-                    """Removed a unique word in the file which is being deleted 
-                    from the search table"""
-                )
-
-            # 3-e
-            self.search_array[int.from_bytes(addrs[3])] = last_free_addr + d_addr
-
-            # 3-f-1
-            self._update_prev_s_entry(addrs=addrs)
-
-            # 3-f-2
-            self._update_prev_d_entry(d_addr=d_addr, addrs=addrs)
-
-            # 3-g
-            self._update_next_d_entry(d_addr=d_addr, addrs=addrs)
-
+            
             # h
-            d_addr = addrs[0]
+            next_lf_d_addr = addrs[0]
 
         # TODO 4 remove c-text corresponding to file_id
 
