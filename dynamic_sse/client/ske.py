@@ -54,7 +54,7 @@ class SecretKeyEnc:
 
                     if is_header:
                         enc_chunk_size = len(enc_chunk).to_bytes(self.HEADER_SIZE, "big")
-                        f_out.write(enc_chunk_size)
+                        f_out.write(enc_chunk_size + b"\n")
                         is_header = False
 
                     f_out.write(enc_chunk)
@@ -68,8 +68,9 @@ class SecretKeyEnc:
             try:
                 while True:
                     
-                    enc_chunk_size = f_in.read(self.HEADER_SIZE)
+                    enc_chunk_size = f_in.readline(self.HEADER_SIZE)
                     if not enc_chunk_size:
+                        logger.debug(f"{in_file} is empty")
                         break
 
                     n = int.from_bytes(enc_chunk_size, "big")
