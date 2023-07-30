@@ -1,9 +1,8 @@
 from os import urandom
 from typing import Iterable, Tuple
 from dynamic_sse.client.utils import PseudoRandomFunc
-from log import get_logger
 from dynamic_sse.tools import FileTools, BytesOpp, RandOracles
-from dynamic_sse.client.ske import SecretKeyEnc
+from log import get_logger
 
 logger = get_logger(__name__)
 
@@ -29,13 +28,13 @@ class TokenFactory:
             length=self.addr_len * 2,
         )
 
-    def get_add_t(self, file_id: bytes, file: str, encoded_dir: str):
+    def get_add_t(self, file_id: bytes, file_path: str):
 
-        if not (file_tokens := FileTools.tokenize_txt_file(file_path=file)):
-            raise RuntimeError(f"Failed to tokenize file {file}")
+        if not (file_tokens := FileTools.tokenize_txt_file(file_path=file_path)):
+            raise RuntimeError(f"Failed to tokenize file {file_path}")
 
         f_file, g_file, p_file = PseudoRandomFunc.get_file_hashes(
-            file=file,
+            file=file_path,
             k1=self.k1,
             k2=self.k2,
             k3=self.k3,
@@ -67,16 +66,14 @@ class TokenFactory:
             t_lambda = f_t + g_t + xor_h1 + r + xor_h2 + r_p
             file_lambdas.append(t_lambda)
 
-        ske = SecretKeyEnc(fernet_keys=self.k4) 
-        ske.enc_file(in_file=file, out_file=f"{encoded_dir}/file_{str(file_id)}.bin")
+    
 
-        #TODO append encrypted file or file path(to e taken care of in core)
-        # return {'add_t' : (f_file, g_file, file_lambdas), enc_f_path : r"{encoded_dir}/file_{str(file_id)}.bin"}
+        # TODO append encrypted file or file path(to e taken care of in core)
         return f_file, g_file, file_lambdas
 
-    def get_del_t(self, file: str, file_id: bytes):
+    def get_del_t(self, file_path: str, file_id: bytes):
         f_file, g_file, p_file = PseudoRandomFunc.get_file_hashes(
-            file=file,
+            file=file_path,
             k1=self.k1,
             k2=self.k2,
             k3=self.k3,
