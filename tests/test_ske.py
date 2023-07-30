@@ -1,9 +1,10 @@
+from pathlib import Path
 from typing import Dict, List
 import pytest
 from cryptography.fernet import Fernet
 from dynamic_sse.client.ske import SecretKeyEnc
+from .conftest import TestDataPaths
 
-# TODO make assertions
 
 
 @pytest.fixture(scope="module")
@@ -31,18 +32,25 @@ def test_enc_single_file(test_ske: SecretKeyEnc, test_files: Dict[str, str]):
     test_ske.enc_file(in_file=test_files["plain_file"], out_file=test_files["enc_file"])
 
 
-def test_dec_single_file(test_ske: SecretKeyEnc, test_files: Dict[str, str]):
+def test_dec_single_file(test_ske: SecretKeyEnc):
+    plain_file = f'{TestDataPaths.PLAIN_DIR.value}/1.txt'
+    enc_file = f'{TestDataPaths.ENC_DIR.value}/1_enc.bin'
+    dec_file = f'{TestDataPaths.DEC_DIR.value}/1_dec.txt'
 
-    test_ske.enc_file(in_file=test_files["plain_file"], out_file=test_files["enc_file"])
-    test_ske.dec_file(in_file=test_files["enc_file"], out_file=test_files["dec_file"])
+    test_ske.enc_file(in_file=plain_file, out_file=enc_file)
+    test_ske.dec_file(in_file=enc_file, out_file=dec_file)
 
-    with open(test_files["plain_file"], "r") as p_f, open(
-        test_files["dec_file"], "r"
+    with open(plain_file, "r") as p_f, open(
+        dec_file, "r"
     ) as dec_f:
         plain_txt = p_f.read()
         decoded_txt = dec_f.read()
 
         assert plain_txt == decoded_txt
+
+    Path(enc_file).unlink(missing_ok=True)
+    Path(dec_file).unlink(missing_ok=True)
+
 
 
 def test_enc_dir_file(test_ske: SecretKeyEnc):

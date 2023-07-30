@@ -45,7 +45,7 @@ def test_add_t(test_t_factory: TokenFactory):
     encode_dir = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/encrypted"
 
     f_file, g_file, file_lambdas = test_t_factory.get_add_t(
-        file_id=f_id, file=f_path, encoded_dir=encode_dir
+        file_id=f_id, file_path=f_path,
     )
 
     for lmb in file_lambdas:
@@ -57,7 +57,7 @@ def test_del_t(test_t_factory: TokenFactory, test_keys):
     f_path = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/plain/three.txt"
     encode_dir = r"/home/elahe/Projects/Python/dynamic_sse/tests/test_data/encrypted"
 
-    *f_hashes, f_i = test_t_factory.get_del_t(file=f_path, file_id=f_id)
+    *f_hashes, f_i = test_t_factory.get_del_t(file_path=f_path, file_id=f_id)
     f_file, g_file, p_file = PseudoRandomFunc.get_file_hashes(
         file=f_path, k1=test_keys[0], k2=test_keys[1], k3=test_keys[2], length=ADDR_LEN
     )

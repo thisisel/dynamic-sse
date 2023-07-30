@@ -9,7 +9,7 @@ from dynamic_sse.client.sse.tokens import TokenFactory
 from dynamic_sse.client.utils import PseudoRandomFunc
 from dynamic_sse.server.core import Server
 
-from .conftest import K, TDataDir, test_enc_obj, test_enc_structs, test_keys
+from .conftest import K, TestDataPaths, test_enc_obj, test_enc_structs, test_keys
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def new_files(test_keys, test_server: Server):
 
     for i in range(5, 8):
         f_id = urandom(K)
-        f_path = f"{TDataDir.PLAIN_DIR.value}/add/{i}.txt"
+        f_path = f"{TestDataPaths.PLAIN_DIR.value}/add/{i}.txt"
         f_f, _, _ = PseudoRandomFunc.get_file_hashes(
             file=f_path,
             k1=test_keys[0],
@@ -55,7 +55,7 @@ def new_files(test_keys, test_server: Server):
 
     for i in range(5, 8):
         f_id = new_files_dict[i]["f_id"]
-        out_path = Path(f"{TDataDir.ENC_DIR.value}/file_{str(f_id)}.bin")
+        out_path = Path(f"{TestDataPaths.ENC_DIR.value}/file_{str(f_id)}.bin")
         out_path.unlink(missing_ok=True)
 
 
@@ -85,11 +85,10 @@ def new_words(test_keys, test_server: Server):
 def test_attributes_eq(test_t_factory: Server, test_enc_obj):
     assert test_t_factory.addr_len == test_enc_obj.addr_len
     assert test_t_factory.k == test_enc_obj.k
-    # assert test_t_factory.file_id_len == test_enc_obj.file_id_len
     assert test_t_factory.ZERO == test_enc_obj.ZERO
 
 
-# TODO improve
+# TODO replace file dict with dbm
 def test_search(
     test_server: Server, test_t_factory: TokenFactory, test_enc_obj: Encode
 ):
@@ -127,8 +126,7 @@ def test_add(
 
     add_t = test_t_factory.get_add_t(
         file_id=new_files[5]["f_id"],
-        file=new_files[5]["f_path"],
-        encoded_dir=TDataDir.ENC_DIR.value,
+        file_path=new_files[5]["f_path"],
     )
     test_server.add(add_t=add_t)
 
@@ -145,8 +143,7 @@ def test_add_duplicate_file(
 ):
     add_t = test_t_factory.get_add_t(
         file_id=new_files[5]["f_id"],
-        file=new_files[5]["f_path"],
-        encoded_dir=TDataDir.ENC_DIR.value,
+        file_path=new_files[5]["f_path"],
     )
 
     result_1 = test_server.add(add_t=add_t)
@@ -165,8 +162,7 @@ def test_batch_add_file(
     for i in range(5, 8):
         add_t = test_t_factory.get_add_t(
             file_id=new_files[i]["f_id"],
-            file=new_files[i]["f_path"],
-            encoded_dir=TDataDir.ENC_DIR.value,
+            file_path=new_files[i]["f_path"],
         )
         test_server.add(add_t=add_t)
 
@@ -182,13 +178,27 @@ def test_delete_initiated_file(test_server: Server, test_t_factory: TokenFactory
     assert len(found_f_ids) != 0
 
     del_t = test_t_factory.get_del_t(
-        file=f"{TDataDir.PLAIN_DIR.value}/1.txt", file_id=found_f_ids[0]
+        file_path=f"{TestDataPaths.PLAIN_DIR.value}/1.txt", file_id=found_f_ids[0]
     )
     result = test_server.delete(del_t=del_t)
     assert result == True
 
     found_f_ids = test_server.search(search_t=search_t)
     assert len(found_f_ids) == 0
+
+
+def test_delete_non_existent_file(
+    test_server: Server,
+    test_t_factory: TokenFactory,
+    new_files: Dict[bytes, str],
+):
+
+    del_t = test_t_factory.get_del_t(
+        file_path=new_files[5]["f_path"], file_id=new_files[5]["f_id"]
+    )
+    result = test_server.delete(del_t=del_t)
+
+    assert result == False
 
 
 def test_delete_newly_added_file(
@@ -199,8 +209,7 @@ def test_delete_newly_added_file(
 
     add_t = test_t_factory.get_add_t(
         file_id=new_files[5]["f_id"],
-        file=new_files[5]["f_path"],
-        encoded_dir=TDataDir.ENC_DIR.value,
+        file_path=new_files[5]["f_path"],
     )
     add_result = test_server.add(add_t=add_t)
     assert add_result == True
@@ -212,17 +221,15 @@ def test_delete_newly_added_file(
     assert len(found_f_ids) == 1
 
     del_t = test_t_factory.get_del_t(
-        file=new_files[5]["f_path"], file_id=new_files[5]["f_id"]
+        file_path=new_files[5]["f_path"], file_id=new_files[5]["f_id"]
     )
     result = test_server.delete(del_t=del_t)
 
     assert result == True
     assert new_files[5]["f_f"] not in test_server.dual_table.keys()
-    # assert test_server.search_table.get(new_word["f_w"]) == 1
 
     found_f_ids = test_server.search(search_t=search_t)
 
-    # assert len(found_f_ids) == 0
     assert found_f_ids[0] == new_files[5]["f_id"]
 
 
@@ -245,17 +252,3 @@ def test_delete_lw_head():
 
 def test_delete_lw_tail():
     ...
-
-
-def test_delete_non_existent_file(
-    test_server: Server,
-    test_t_factory: TokenFactory,
-    new_files: Dict[bytes, str],
-):
-
-    del_t = test_t_factory.get_del_t(
-        file=new_files[5]["f_path"], file_id=new_files[5]["f_id"]
-    )
-    result = test_server.delete(del_t=del_t)
-
-    assert result == False

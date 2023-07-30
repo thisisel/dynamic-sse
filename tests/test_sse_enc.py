@@ -1,13 +1,13 @@
 from os import urandom
-from pathlib import Path
 from typing import Dict, List
-import dbm
 
 import pytest
 
-from dynamic_sse.client.sse import Encode, Generate, FREE_LIST_INIT_SIZE, FREE
-from dynamic_sse.tools import FileTools, DataTools, BytesOpp, RandOracles
-from .conftest import test_keys, K, test_directory_size, TDataDir, test_enc_obj
+from dynamic_sse.client.sse import FREE, FREE_LIST_INIT_SIZE, Encode, Generate
+from dynamic_sse.tools import BytesOpp, DataTools, FileTools, RandOracles
+
+from .conftest import (K, TestDataPaths, test_dbm, test_directory_size,
+                       test_enc_obj, test_keys)
 
 
 @pytest.fixture
@@ -27,15 +27,6 @@ def total_nodes_num(test_data):
 
     return num
 
-@pytest.fixture
-def test_dbm():
-    with dbm.open(f"{TDataDir.DB_DIR.value}/test_db", 'c') as db:
-        yield db
-    
-    extensions = ('dat', 'bak', 'dir')
-    for ext in extensions:
-        db_path = Path(f"{TDataDir.DB_DIR.value}/test_db.{ext}")
-        db_path.unlink(missing_ok=True)
 
 def test_zero(test_enc_obj: Encode):
     z_bytes = test_enc_obj.ZERO.encode()
@@ -48,9 +39,7 @@ def test_find_id(test_enc_obj: Encode, test_dbm):
     f_ids = [test_enc_obj.find_usable_file_id(db=test_dbm) for _ in range(10)]
 
     for i in f_ids:
-        # assert i in test_enc_obj.file_dict.keys()
         assert i in test_dbm.keys()
-        # assert test_enc_obj.file_dict.get(i) is None
         assert test_dbm.get(i) == test_enc_obj.zero_bytes
 
 
@@ -200,4 +189,3 @@ def test_make_lf_lw(test_enc_obj: Encode, test_data: Dict[bytes, List[str]]):
 
 def test_make_free_list(test_enc_obj: Encode):
     pass
-

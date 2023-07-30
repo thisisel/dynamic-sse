@@ -3,7 +3,8 @@ import pytest
 
 
 from dynamic_sse.tools import FileTools
-from . conftest import TDataDir
+from .conftest import TestDataPaths
+
 
 @pytest.fixture
 def test_data():
@@ -15,15 +16,15 @@ def test_data():
 
 
 def test_dir_stats_size():
-    n, s = FileTools.get_dir_files_stats(dir_path=TDataDir.PLAIN_DIR.value)
+    n, s = FileTools.get_dir_files_stats(dir_path=TestDataPaths.PLAIN_DIR.value)
     assert n == 4
     assert s == 322
 
+
 def test_text_tokenization():
-    f_path = TDataDir.PLAIN_DIR.value + r'/add/five.txt'
+    f_path = TestDataPaths.PLAIN_DIR.value + r"/add/five.txt"
     tokens = FileTools.tokenize_txt_file(file_path=f_path)
     assert len(tokens) > 10
 
-    with open(f_path, 'r') as in_file:
+    with open(f_path, "r") as in_file:
         corpus = in_file.read()
-
