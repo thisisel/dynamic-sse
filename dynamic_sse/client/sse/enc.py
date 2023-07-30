@@ -304,9 +304,7 @@ class Encode:
                         # self.file_dict.update(
                         #     {f_id: f"{encoded_dir}/file_{file_num}.bin"}
                         # )
-                        db.update(
-                            {f_id: f"{encoded_dir}/file_{file_num}.bin".encode()}
-                        )
+                        db.update({f_id: f"{encoded_dir}/file_{f_id}.bin".encode()})
                         file_num += 1
 
                         logger.debug(
