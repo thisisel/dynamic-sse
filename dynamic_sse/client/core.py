@@ -1,31 +1,80 @@
+import dbm
+
 from dynamic_sse.client.ske import SecretKeyEnc
-from dynamic_sse.client.sse import Encode, Generate
-from dynamic_sse.client.config import PLAIN_DIR
-from dynamic_sse.tools import FileTools
+from dynamic_sse.client.sse import Encode, TokenFactory
+from dynamic_sse.client.utils import KeyManager
+from dynamic_sse.tools import FileTools, str_to_bytes
+from log import get_logger
+
+logger = get_logger(__name__)
+
 
 class Client:
-    def __init__(self, security_param: int = 32, key_ring_reset : bool = True) -> None:
+    def __init__(
+        self,
+        master_key: str,
+        plain_dir: str,
+        encoded_dir: str,
+        enc_files_db: str,
+        security_param: int = 32,
+    ) -> None:
         self.security_param = security_param
 
-        if key_ring_reset:
-            self.keys = Generate.get_keys(
-                    k=self.security_param,
-                )
-        
-        self.ske = SecretKeyEnc(fernet_keys=self.keys[3])
-        _, size_c = FileTools.get_dir_files_stats(PLAIN_DIR)
-        self.encode_obj = Encode(size_c=size_c, keys=self.keys)
+        self.plain_dir = plain_dir
+        self.encoded_dir = encoded_dir
+        self.enc_files_db = enc_files_db
 
-    def upload(self):
+        master_key = KeyManager.string_to_urlsafe_token(text=master_key)
+        self.key_ring = KeyManager.load_keys_locally(master_key=master_key)
+
+        _, size_c = FileTools.get_dir_files_stats(dir_path=plain_dir)
+        self.encoder = Encode(size_c=size_c, keys=self.key_ring)
+        self.token_factory = TokenFactory(
+            keys=self.key_ring, addr_len=self.encoder.addr_len
+        )
+
+    def encode(self):
+        ske = SecretKeyEnc(fernet_keys=self.key_ring[3])
+
+        self.encoder.enc(
+            plain_dir=self.plain_dir,
+            encoded_dir=self.encoded_dir,
+            ske=ske,
+            enc_files_db=self.enc_files_db,
+        )
+
+    def decode(self):
         pass
 
-    def search(self):
-        pass
+    def search(self, word: str):
+        search_token = self.token_factory.get_search_t(word=word)
+        return search_token
 
-    def add(self):
-        pass
+    @str_to_bytes("file_id")
+    def add(self, file_id: bytes, file_path: str):
 
-    def delete(self):
-        pass
-    
+        add_token = self.token_factory.get_add_t(
+            file_id=file_id.encode(),
+            file_path=file_path,
+        )
 
+        ske = SecretKeyEnc(fernet_keys=self.k4)
+        ske.enc_file(
+            in_file=file_path, out_file=f"{self.encoded_dir}/file_{str(file_id)}.bin"
+        )
+
+        with dbm.open(self.enc_files_db, "c") as db:
+            db.update({file_id: f"{self.encoded_dir}/file_{file_id}.bin".encode()})
+
+        logger.debug(
+            f"New file encoded to be added \n{self.encoded_dir}/file_{file_id}.bin"
+        )
+
+        return add_token
+
+    @str_to_bytes("file_id")
+    def delete(self, file_id: bytes, file_path: str):
+        delete_token = self.token_factory.get_del_t(
+            file_path=file_path, file_id=file_id
+        )
+        return delete_token
