@@ -256,8 +256,10 @@ class Encode:
 
         self.dual_array[int.from_bytes(next_d_addr)] = updated_hashed_entry + rd
 
-    def enc(self, raw_files_dir: str, encoded_dir: str, ske: SecretKeyEnc):
-        raw_files_dir_path = Path(raw_files_dir)
+    def enc(
+        self, plain_dir: str, encoded_dir: str, ske: SecretKeyEnc, enc_files_db: str
+    ):
+        plain_files_dir_path = Path(plain_dir)
         file_num = 0
 
         for entry in raw_files_dir_path.iterdir():
