@@ -262,7 +262,7 @@ class Encode:
         plain_files_dir_path = Path(plain_dir)
         file_num = 0
 
-        for entry in raw_files_dir_path.iterdir():
+        for entry in plain_files_dir_path.iterdir():
 
             if entry.is_file():
 
@@ -280,7 +280,7 @@ class Encode:
                     )
                     continue
 
-                with dbm.open("dsse_file_db", "c") as db:
+                with dbm.open(enc_files_db, "c") as db:
                     db[self.zero_bytes] = self.zero_bytes
 
                     f_id = self.find_usable_file_id(db=db)
