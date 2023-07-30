@@ -118,5 +118,6 @@ cython_debug/
 playground.py
 my_app.log
 tests/test_data/encrypted/
+tests/test_data/decrypted/
 logs/
 dynamic_sse.code-workspace
