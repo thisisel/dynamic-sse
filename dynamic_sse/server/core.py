@@ -277,12 +277,10 @@ class Server:
 
             # 2-b
             self.search_table[FREE] = prev_s_free_addr + self.zero_bytes
-            logger.debug(f"updated free addr in search table to {prev_s_free_addr}")
 
             # 2-c
             if (lw_head_encrypted := self.search_table.get(f_w)) is None:
-                logger.debug(f"New word detected while adding a new doc")
-                logger.debug(f"New  f_w '{f_w}")
+                logger.debug(f"New word detected while adding a new doc, \nf_w : {f_w}")
              
                 head_s_addr = self.zero_bytes
                 head_d_addr = self.zero_bytes
@@ -292,8 +290,6 @@ class Server:
                     lw_head_addrs, self.addr_len
                 )
              
-                logger.debug(f"old w f_w '{f_w}")
-
             # 2-d
             self.search_array[int.from_bytes(s_free_addr)] = (
                 BytesOpp.xor_bytes(
