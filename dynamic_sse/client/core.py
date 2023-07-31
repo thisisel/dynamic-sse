@@ -40,7 +40,6 @@ class Client:
         self.ske = SecretKeyEnc(fernet_keys=self.key_ring[3])
 
     def encode(self):
-        ske = SecretKeyEnc(fernet_keys=self.key_ring[3])
 
         self.encoder.enc(
             plain_dir=self.plain_dir,
