@@ -32,6 +32,7 @@ class Client:
         self.token_factory = TokenFactory(
             keys=self.key_ring, addr_len=self.encoder.addr_len
         )
+        self.ske = SecretKeyEnc(fernet_keys=self.key_ring[3])
 
     def encode(self):
         ske = SecretKeyEnc(fernet_keys=self.key_ring[3])
@@ -39,7 +40,7 @@ class Client:
         self.encoder.enc(
             plain_dir=self.plain_dir,
             encoded_dir=self.encoded_dir,
-            ske=ske,
+            ske=self.ske,
             enc_files_db=self.enc_files_db,
         )
 
@@ -58,8 +59,7 @@ class Client:
             file_path=file_path,
         )
 
-        ske = SecretKeyEnc(fernet_keys=self.k4)
-        ske.enc_file(
+        self.ske.enc_file(
             in_file=file_path, out_file=f"{self.encoded_dir}/file_{str(file_id)}.bin"
         )
 
