@@ -1,5 +1,8 @@
 import dbm
 
+import secrets
+import string
+
 from dynamic_sse.client.ske import SecretKeyEnc
 from dynamic_sse.client.sse import Encode, TokenFactory
 from dynamic_sse.client.utils import KeyManager
@@ -46,8 +49,15 @@ class Client:
             enc_files_db=self.enc_files_db,
         )
 
-    def decode(self):
-        pass
+    def decode(self, enc_file : str) -> str:
+        alphabet = string.ascii_letters + string.digits
+        file_name =  ''.join(secrets.choice(alphabet) for _ in range(6))
+        out_file  = f'{self.decrypted_dir}/{file_name}.txt'
+
+        self.ske.dec_file(in_file=enc_file, out_file=out_file)
+
+        return out_file
+        
 
     def search(self, word: str):
         search_token = self.token_factory.get_search_t(word=word)
