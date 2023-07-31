@@ -74,7 +74,7 @@ class SecretKeyEnc:
                         break
 
                     n = int.from_bytes(enc_chunk_size, "big")
-                    while enc_chunk := FileTools.chunk_reader(f_ptr = f_in, chunk_size = n):
+                    while enc_chunk := FileTools.chunk_reader(f_ptr = f_in, chunk_size = n+1):
                         dec_chunk = self.multi_f.decrypt(enc_chunk)
                         f_out.write(dec_chunk.decode())
          
