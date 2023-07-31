@@ -15,6 +15,7 @@ class Client:
         master_key: str,
         plain_dir: str,
         encoded_dir: str,
+        decrypted_dir: str,
         enc_files_db: str,
         security_param: int = 32,
     ) -> None:
@@ -22,6 +23,7 @@ class Client:
 
         self.plain_dir = plain_dir
         self.encoded_dir = encoded_dir
+        self.decrypted_dir = decrypted_dir
         self.enc_files_db = enc_files_db
 
         master_key = KeyManager.string_to_urlsafe_token(text=master_key)
