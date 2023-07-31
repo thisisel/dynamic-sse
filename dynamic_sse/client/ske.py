@@ -50,7 +50,7 @@ class SecretKeyEnc:
 
                 is_header = True
                 while plain_chunk := FileTools.chunk_reader(f_in):
-                    enc_chunk = self.multi_f.encrypt(plain_chunk)
+                    enc_chunk = self.multi_f.encrypt(plain_chunk.encode())
 
                     if is_header:
                         enc_chunk_size = len(enc_chunk).to_bytes(self.HEADER_SIZE, "big")
