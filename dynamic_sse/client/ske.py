@@ -46,7 +46,7 @@ class SecretKeyEnc:
     def enc_file(self, in_file, out_file):
         #TODO check outfile extension : bin
         try:
-            with open(in_file, "rb") as f_in, open(out_file, "wb") as f_out:
+            with open(in_file, "r") as f_in, open(out_file, "wb") as f_out:
 
                 is_header = True
                 while plain_chunk := FileTools.chunk_reader(f_in):
