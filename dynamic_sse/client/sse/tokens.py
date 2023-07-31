@@ -68,7 +68,6 @@ class TokenFactory:
 
     
 
-        # TODO append encrypted file or file path(to e taken care of in core)
         return f_file, g_file, file_lambdas
 
     def get_del_t(self, file_path: str, file_id: bytes):
