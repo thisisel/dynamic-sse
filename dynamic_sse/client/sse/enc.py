@@ -10,11 +10,9 @@ from numpy._typing import NDArray
 from dynamic_sse.client.types import SecretKeyEnc
 from dynamic_sse.client.utils import PseudoRandomFunc
 from dynamic_sse.tools import BytesOpp, FileTools, RandOracles, DataTools
+from dynamic_sse.client.config import FREE_LIST_INIT_SIZE, FREE
 from log import get_logger
 
-# TODO give z as an argument to contractor
-FREE_LIST_INIT_SIZE = 1000  # z
-FREE = "azad"
 
 logger = get_logger(__name__)
 

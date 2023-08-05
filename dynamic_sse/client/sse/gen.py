@@ -1,8 +1,7 @@
 import os
 from typing import Iterable, List, Tuple
 from cryptography.fernet import Fernet
-
-VALID_K = (20, 28, 32, 64)
+from config import VALID_K
 
 
 class Generate:

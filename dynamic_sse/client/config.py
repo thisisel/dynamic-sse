@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 FREE = "azad"
+FREE_LIST_INIT_SIZE = 1000  
+VALID_K = (20, 28, 32, 64)
+
 
 PLAIN_DIR = os.getenv('PLAIN_DIR') 
 ENC_DIR = os.getenv('ENCODED_DIR')
