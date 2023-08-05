@@ -6,10 +6,9 @@ db =  orm.Database()
 
 class User(db.Entity):
     username: str = orm.Required(str, max_len=15, unique=True)
-    password_hash: str = orm.Required(str)
+    password_hash: str = orm.Required(str, min_len=10, max_len=15)
 
     files = set(lambda : Files)
-    structs = set(lambda : Structs)
 
     @property
     def password(self):
