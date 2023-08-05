@@ -29,5 +29,6 @@ class User(db.Entity):
 
 
 class Files(db.Entity):
+    file_id : bytes = orm.Required(bytes)
     enc_file_path: str = orm.Required(str)
     owner : User = orm.Required(User)
