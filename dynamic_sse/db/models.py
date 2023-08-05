@@ -31,11 +31,3 @@ class User(db.Entity):
 class Files(db.Entity):
     enc_file_path: str = orm.Required(str)
     owner : User = orm.Required(User)
-
-
-class Structs(db.Entity):
-    search_array: str = orm.Required(str)
-    dual_array: str = orm.Required(str)
-    search_table: str = orm.Required(str)
-    dual_table: str = orm.Required(str)
-    owner : User = orm.Required(User)
