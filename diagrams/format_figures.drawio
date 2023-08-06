@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-08-06T12:58:26.654Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0" version="21.6.2" etag="BfDda9OGCLQU8ohJZ8vf" type="github" pages="3">
+<mxfile host="app.diagrams.net" modified="2023-08-06T13:13:23.055Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0" version="21.6.2" etag="wbMxqWIZAPBruAw6U2p4" type="github" pages="3">
   <diagram id="mcaaGemC9CdYigRSOJqH" name="nodes_entry">
     <mxGraphModel dx="1273" dy="942" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
       <root>
@@ -317,7 +317,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="tWWIsSU93eVBsk8a4pAt" name="tokens">
-    <mxGraphModel dx="1880" dy="709" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+    <mxGraphModel dx="1546" dy="1144" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -568,7 +568,7 @@
         <mxCell id="7utYsnlyULxe8MD9s7ih-26" value="#bits:" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontFamily=Courier New;" parent="1" vertex="1">
           <mxGeometry x="145" y="755" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="MijOyAHa005VkbBnJueC-1" value="" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Courier New;fontSize=11;fillColor=#f8cecc;opacity=40;strokeColor=#b85450;" parent="1" vertex="1">
+        <mxCell id="MijOyAHa005VkbBnJueC-1" value="" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Courier New;fontSize=11;fillColor=#dae8fc;opacity=40;strokeColor=#6c8ebf;" parent="1" vertex="1">
           <mxGeometry x="150" y="890" width="1010" height="40" as="geometry" />
         </mxCell>
         <mxCell id="MijOyAHa005VkbBnJueC-2" value="" style="shape=crossbar;whiteSpace=wrap;html=1;rounded=1;fontFamily=Courier New;fontSize=11;" parent="1" vertex="1">
